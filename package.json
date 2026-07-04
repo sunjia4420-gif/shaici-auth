@@ -1,0 +1,1 @@
+{"name": "shaici-auth", "version": "2.0.0", "description": "筛词神器口令认证系统 - 含工具权限管理", "main": "server.js", "scripts": {"start": "node server.js"}, "dependencies": {"@supabase/supabase-js": "^2.49.1", "express": "^4.21.2", "express-session": "^1.18.1"}}
