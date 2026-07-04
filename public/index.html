@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>筛词神器 - 口令验证</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f0f1a;
+  color: #e0e0e0;
+  display: flex; justify-content: center; align-items: center;
+  min-height: 100vh;
+}
+.container {
+  width: 100%; max-width: 400px; padding: 20px;
+}
+.logo { text-align: center; margin-bottom: 32px; }
+.logo h1 { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.logo p { font-size: 13px; color: #666; margin-top: 6px; }
+.card {
+  background: rgba(30, 30, 50, 0.8);
+  border-radius: 16px; padding: 32px 28px;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  backdrop-filter: blur(10px);
+}
+.form-group { margin-bottom: 20px; }
+label { display: block; font-size: 13px; color: #888; margin-bottom: 8px; }
+input[type="text"], input[type="password"] {
+  width: 100%; padding: 12px 14px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.3);
+  color: #e0e0e0; font-size: 15px; outline: none; transition: all 0.2s;
+}
+input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+.btn {
+  width: 100%; padding: 13px; border-radius: 10px; border: none;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;
+  transition: all 0.2s;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.35); }
+.btn:active { transform: translateY(0); }
+.msg { margin-top: 14px; text-align: center; font-size: 13px; min-height: 20px; }
+.msg.error { color: #ef4444; }
+.msg.success { color: #22c55e; }
+.loading-spinner { display: none; width: 18px; height: 18px; border: 2px solid transparent; border-top: 2px solid #fff; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo"><h1>筛词神器</h1><p>口令验证系统</p></div>
+  <div class="card">
+    <form id="loginForm" onsubmit="return false;">
+      <div class="form-group"><label>访问口令</label><input type="text" id="pwdInput" placeholder="请输入访问口令" autocomplete="off"></div>
+      <button class="btn" id="submitBtn" onclick="verify()"><span class="loading-spinner"></span><span>进入工具</span></button>
+      <div class="msg" id="msg"></div>
+    </form>
+  </div>
+</div>
+<script>
+const pwdInput = document.getElementById('pwdInput');
+const msgEl = document.getElementById('msg');
+const submitBtn = document.getElementById('submitBtn');
+
+pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') verify(); });
+
+async function verify() {
+  const password = pwdInput.value.trim();
+  if (!password) return showMsg('请输入口令', true);
+
+  setLoading(true);
+  showMsg('');
+
+  try {
+    const resp = await fetch('/api/verify', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ password })
+    });
+    const data = await resp.json();
+    if (data.success) showMsg(`欢迎，${data.name}！正在跳转...`, false);
+    else showMsg(data.message || '验证失败', true);
+
+    if (data.success) setTimeout(() => window.location.href = '/tool', 800);
+  } catch(e) { showMsg('网络错误，请重试', true); }
+  finally { setLoading(false); }
+}
+
+function setLoading(on) {
+  submitBtn.querySelector('.loading-spinner').style.display = on ? 'inline-block' : 'none';
+  submitBtn.querySelector('span:last-child').textContent = on ? '验证中...' : '进入工具';
+  submitBtn.style.opacity = on ? '0.7' : '1';
+  submitBtn.disabled = on;
+}
+
+function showMsg(text, isError) {
+  msgEl.textContent = text;
+  msgEl.className = 'msg ' + (isError ? 'error' : 'success');
+}
+</script>
+</body>
+</html>
