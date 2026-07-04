@@ -229,6 +229,9 @@ app.get('/api/admin/logs', async (req, res) => {
   }
 });
 
+// 健康检查
+app.get('/health', (req, res) => res.json({ ok: true, tool: TOOL_NAME }));
+
 // 启动服务器
 app.listen(PORT, () => {
   console.log(`=== 筛词神器口令系统 ===`);
