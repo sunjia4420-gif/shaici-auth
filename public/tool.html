@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>筛词神器 v3.1</title>
+<title>筛词神器 v4.2</title>
 <style>
 :root {
   --bg: #1a1a2e;
@@ -33,6 +33,8 @@ body {
 }
 
 .app-header {
+  display: flex;
+  align-items: center;
   background: linear-gradient(135deg, var(--highlight) 0%, var(--accent) 100%);
   color: white;
   padding: 16px 24px;
@@ -514,11 +516,301 @@ tr.banned-row:hover {
   font-size: 11px;
   margin-left: auto;
 }
+
+/* ========= v4.0 新增：输出结果列样式 ========= */
+.output-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  color: white;
+  white-space: nowrap;
+}
+.output-title { background: #e94560; color: white; }   /* 标题词 - 红色 */
+.output-longtail { background: #3b82f6; color: white; } /* 长尾词 - 蓝色 */
+.output-topic { background: #22c55e; color: white; }    /* 专题词 - 绿色 */
+.output-sandbox { background: #6b7280; color: white; }  /* 沙池词 - 灰色 */
+.output-banned { background: #991b1b; color: white; }   /* 违禁词 - 暗红 */
+
+/* v4.0 改造（方案B：多重标签）：输出结果列并排小药丸标签 */
+.output-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+.output-tag {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  background: #ffffff;            /* 白底 */
+  border: 1px solid #6b7280;      /* 彩色细边框（运行时由 style 覆盖颜色） */
+  color: #6b7280;                 /* 彩色文字（运行时由 style 覆盖颜色） */
+  white-space: nowrap;
+}
+
+/* ========= v4.0 新增：品牌词灰显样式 ========= */
+.brand-word {
+  color: #8888aa !important;
+  background: #2a2a4e;
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+/* ========= v4.0 fix：违禁词灰显样式 ========= */
+.banned-word {
+  color: #991b1b !important;
+  background: #fef2f2;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* ========= v4.0 新增：输出规则编辑器样式 ========= */
+.rule-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.rule-tab {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-bottom: 2px solid transparent;
+  padding: 4px 10px;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.rule-tab:hover { background: var(--highlight); }
+.rule-tab.active {
+  background: var(--highlight);
+  color: white;
+  border-bottom-color: var(--accent);
+}
+.rule-logic {
+  font-size: 13px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+.rule-logic label { cursor: pointer; }
+.rule-condition-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.rule-condition-row select,
+.rule-condition-row input[type="text"] {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+.rule-condition-row select { max-width: 110px; }
+.rule-condition-row input[type="text"] { flex: 1; min-width: 60px; }
+.rule-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+.rule-color-row input[type="color"] {
+  width: 40px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+/* ========= v4.0 新增：词频分析弹窗样式 ========= */
+.word-freq-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.word-freq-modal.show { display: flex; }
+.word-freq-inner {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 92%;
+  max-width: 720px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+.word-freq-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.word-freq-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.wf-sort { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.wf-sort .btn-sm.active {
+  background: var(--accent);
+  color: white;
+}
+.word-freq-table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+.word-freq-table-wrap table {
+  position: relative;
+}
+.word-freq-table-wrap th {
+  position: sticky;
+  top: 0;
+  background: var(--highlight);
+  z-index: 5;
+}
+.word-freq-table-wrap td {
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.wf-stat-bar {
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.wf-stat-bar .wf-stat-item { display: flex; align-items: center; gap: 4px; }
+.wf-stat-bar .wf-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.word-freq-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+.word-freq-table-wrap select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 12px;
+  max-width: 110px;
+}
+
+/* ========= v4.0 交互优化：输出结果规则弹窗样式 ========= */
+.output-rules-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.output-rules-modal.show { display: flex; }
+.output-rules-inner {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 92%;
+  max-width: min(680px, 94vw);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+.output-rules-inner .rule-logic {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.output-rules-inner .rule-color-row {
+  padding: 0 16px;
+}
+.output-rules-inner .btn-primary {
+  margin: 12px 16px 16px;
+}
+
+/* ========= v4.0 交互优化：词频分析分类选择项（四并列可点击选项框）========= */
+.wf-cat-options { display: flex; gap: 4px; flex-wrap: wrap; }
+.wf-cat-btn {
+  font-size: 11px;
+  padding: 3px 7px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+  transition: all .12s;
+}
+.wf-cat-btn:hover:not(:disabled) { border-color: #94a3b8; }
+.wf-cat-btn.selected {
+  color: #fff;
+  border-color: transparent;
+  font-weight: 600;
+}
+.wf-cat-btn.selected[data-cat="品类词"] { background: #3b82f6; }
+.wf-cat-btn.selected[data-cat="强相关"] { background: #22c55e; }
+.wf-cat-btn.selected[data-cat="弱相关"] { background: #e9c46a; }
+.wf-cat-btn.selected[data-cat="跳过词"] { background: #8888aa; }
+.wf-cat-btn.selected[data-cat="违禁词"] { background: #991b1b; }
+.wf-cat-btn:disabled, .wf-cat-btn.brand-locked {
+  opacity: .45;
+  cursor: not-allowed;
+  background: #e5e7eb;
+  color: #9ca3af;
+}
+.wf-cat-btn.banned-locked {
+  opacity: .45;
+  cursor: not-allowed;
+  background: #fef2f2;
+  color: #991b1b !important;
+  border-color: #fecaca;
+}
 </style>
 </head>
 <body>
+<body>
+<div id="__authGuard" style="position:fixed;inset:0;z-index:2147483647;background:#1a1a2e;display:flex;align-items:center;justify-content:center;color:#8888aa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;">验证中…</div>
+<script>
+(function(){
+  var g=document.getElementById('__authGuard');
+  fetch('/api/check-auth').then(function(r){return r.json();}).then(function(d){
+    if(!d.authenticated){window.location.href='/login';return;}
+    if(g)g.remove();
+  }).catch(function(){if(g)g.remove();});
+})();
+</script>
 
-<header class="app-header"><div id="appTitle" contenteditable="true" spellcheck="false">筛词神器 v3.1</div></header>
+<header class="app-header"><div id="appTitle" contenteditable="true" spellcheck="false">筛词神器 v4.2</div><span class="header-actions" style="margin-left:auto; display:inline-flex; gap:8px; align-items:center;"><button class="btn" onclick="saveConfig()">保存配置</button><button class="btn" onclick="document.getElementById('configFileInput').click()">加载配置</button></span><input type="file" id="configFileInput" accept=".json,application/json" style="display:none" onchange="handleConfigFile(event)"></header>
 
 <main class="main-layout">
   <div class="top-row">
@@ -528,9 +820,9 @@ tr.banned-row:hover {
         <div class="card-header">
           <span>📂 词组库</span>
           <span class="badge" id="phraseCount">0</span>
-          <button class="btn" onclick="document.getElementById('fileInput').click()">📄 上传TXT</button>
+          <button class="btn" onclick="document.getElementById('fileInput').click()">📄 上传文件</button>
           <button class="btn" onclick="clearPhrases()">清空</button>
-          <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFileUpload(event)">
+          <input type="file" id="fileInput" accept=".txt,.xlsx,.xls" style="display:none" onchange="handleFileUpload(event)">
         </div>
         <div class="resize-handle" data-target="phraseCardBody"></div>
         <div class="card-body card-scroll" id="phraseCardBody">
@@ -549,6 +841,7 @@ tr.banned-row:hover {
           <button class="btn" onclick="startCalculation()">开始计算</button>
           <button class="btn" onclick="stopCalculation()">停止</button>
           <button class="btn" onclick="exportCSV()">📥 导出CSV</button>
+          <button class="btn" onclick="openWordFreqModal()">📊 词频分析</button>
         </div>
         <div class="card-body" id="calcCardBody">
           <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
@@ -659,6 +952,14 @@ tr.banned-row:hover {
               <input type="number" id="bonusAmount" value="20" min="0" max="99" style="width:60px;">
             </label>
           </div>
+        </div>
+      </div>
+      <!-- v4.0 交互优化：输出结果规则改为弹窗显示，原位置仅保留触发按钮 -->
+      <div class="card">
+        <div class="card-header"><span>🎯 输出结果规则</span></div>
+        <div class="card-body">
+          <button class="btn-primary" style="width:100%;" onclick="openOutputRulesModal()">⚙️ 打开输出结果规则编辑器</button>
+          <p style="font-size:12px;color:#888;margin-top:8px;">点击打开弹窗，可视化配置5类词的判定条件。</p>
         </div>
       </div>
     </div>
@@ -896,24 +1197,74 @@ tr.banned-row:hover {
     </div>
   </div>
 
+  <!-- v4.0 新增：词频分析弹窗 -->
+  <div class="word-freq-modal" id="wordFreqModal">
+    <div class="word-freq-inner">
+      <div class="word-freq-header">
+        <span style="font-size:16px; font-weight:600;">📊 词频分析 (Top 100)</span>
+        <button class="btn" style="background:#8a1a1a; color:white; border:none;" onclick="closeWordFreqModal()">关闭</button>
+      </div>
+      <div class="word-freq-toolbar">
+        <div class="wf-sort">
+          排序:
+          <button class="btn btn-sm" id="wfSortFreq" onclick="setWordFreqSort('freq')">按频率↓</button>
+          <button class="btn btn-sm" id="wfSortAlpha" onclick="setWordFreqSort('alpha')">按首字母A-Z</button>
+        </div>
+        <input type="text" id="wfSearch" placeholder="搜索单词..." oninput="onWordFreqSearch()" style="flex:1; min-width:160px;">
+      </div>
+      <div class="word-freq-table-wrap">
+        <table id="wfTable">
+          <thead>
+            <tr>
+              <th style="width:40px;">#</th>
+              <th>单词</th>
+              <th style="width:70px;">频次</th>
+              <th>分类选择</th>
+              <th style="width:90px;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="wfTableBody"></tbody>
+        </table>
+      </div>
+      <div class="wf-stat-bar" id="wfStatBar"></div>
+      <div class="word-freq-footer">
+        <button class="btn-primary" onclick="applyWordFreqCategories()">批量应用所选分类到分区设置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- v4.0 交互优化：输出结果规则弹窗（原内联卡片移入此处） -->
+  <div class="output-rules-modal" id="outputRulesModal">
+    <div class="output-rules-inner">
+      <div class="word-freq-header">
+        <span style="font-size:16px; font-weight:600;">🎯 输出结果规则编辑器</span>
+        <button class="btn" style="background:#8a1a1a; color:white; border:none;" onclick="closeOutputRulesModal()">关闭</button>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin:4px 0 2px;">提示：一个词组可同时命中多个类别（标题词/长尾词/专题词），输出结果将全部并列显示；违禁词独占；均未命中则归为沙池词。</div>
+      <div class="rule-tabs" id="ruleTabs"></div>
+      <div class="rule-logic">
+        条件组合:
+        <label style="margin-left:6px;"><input type="radio" name="ruleLogic" value="AND"> AND</label>
+        <label style="margin-left:8px;"><input type="radio" name="ruleLogic" value="OR"> OR</label>
+        <button class="btn btn-sm" onclick="resetOutputRules()" style="margin-left:10px;">重置默认</button>
+      </div>
+      <div id="ruleConditions" style="max-height:46vh; overflow:auto; margin-top:6px;"></div>
+      <button class="btn btn-sm" onclick="addRuleCondition()" style="margin-top:6px;">+ 添加条件</button>
+      <div class="rule-color-row">
+        <span>颜色:</span>
+        <input type="color" id="ruleColor" value="#e94560">
+        <span id="ruleColorText">#e94560</span>
+      </div>
+      <button class="btn-primary" onclick="applyOutputRules()" style="margin-top:10px;">应用规则</button>
+    </div>
+  </div>
+
 </main>
 
-<script>
-// ========= 登录检查（口令保护）=========
-(async function() {
-  try {
-    const res = await fetch('/api/check-auth');
-    const data = await res.json();
-    if (!data.authenticated) {
-      window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
-      return;
-    }
-  } catch(e) {
-    console.error('登录检查失败:', e);
-    window.location.href = '/login';
-  }
-})();
+<!-- v4.0 新增：SheetJS (xlsx.js) CDN，用于解析 Excel 导入 -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
+<script>
 // ========= 跳过词集合（按类别拆分，便于用户控制） =========
 const PREP_SET = Object.create(null);
 const PREPS = [
@@ -4602,42 +4953,114 @@ let shouldStop = false;
 const brandSet = new Set(BRAND_TEXT.split('\n').map(b => b.trim().toLowerCase()).filter(b => b.length > 0));
 
 // ========= 词组库管理 =========
+// v4.0 新增：将数值单元格转为数字，缺失为 0
+function numOr0(v) {
+  if (v === '' || v == null) return 0;
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : n;
+}
+
+// v4.0 新增：解析 Excel 行数据为对象数组（跳过表头行，第一列=关键词词组）
+function parseExcelRows(rows) {
+  const out = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || row.length === 0) continue;
+    const text = String(row[0] == null ? '' : row[0]).trim();
+    if (!text) continue;
+    out.push({
+      text: text,
+      searchVolume: numOr0(row[1]),
+      competitorCount: numOr0(row[2]),
+      cpr: numOr0(row[3]),
+      adRank: numOr0(row[4]),
+      naturalRank: numOr0(row[5]),
+      repeat: numOr0(row[6])
+    });
+  }
+  return out;
+}
+
+// v4.0 新增：统一刷新词组库 UI（兼容字符串与对象两种格式）
+function updatePhraseUI(list) {
+  document.getElementById('phraseCount').textContent = list.length;
+  const preview = document.getElementById('phrasePreview');
+  preview.innerHTML = '';
+  const showCount = Math.min(list.length, 50);
+  for (let i = 0; i < showCount; i++) {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.textContent = typeof list[i] === 'string' ? list[i] : list[i].text;
+    preview.appendChild(chip);
+  }
+  if (list.length > 50) {
+    const more = document.createElement('span');
+    more.className = 'chip';
+    more.textContent = `...还有${list.length - 50}个`;
+    preview.appendChild(more);
+  }
+}
+
 function handleFileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
-  
+  const name = (file.name || '').toLowerCase();
+
+  // v4.0 新增：Excel 文件 (.xlsx/.xls) 处理
+  if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const firstSheetName = wb.SheetNames[0];
+        const ws = wb.Sheets[firstSheetName];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+        const objArr = parseExcelRows(rows);
+        applyImportedPhrases(objArr);
+      } catch (err) {
+        alert('Excel 解析失败：' + (err && err.message ? err.message : err));
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+    return;
+  }
+
+  // 原有 TXT 处理逻辑（向后兼容）
   const reader = new FileReader();
   reader.onload = (e) => {
     document.getElementById('phraseInput').value = e.target.result;
+    phrases = []; // v4.0：清空可能存在的 Excel 对象，避免沿用旧数值字段
     parseAndPreviewPhrases();
   };
   reader.readAsText(file);
   event.target.value = '';
 }
 
+// v4.0 新增：应用导入的对象数组（Excel），同步更新文本框与预览
+function applyImportedPhrases(arr) {
+  phrases = arr;
+  document.getElementById('phraseInput').value = arr.map(p => typeof p === 'string' ? p : p.text).join('\n');
+  updatePhraseUI(arr);
+}
+
 function parseAndPreviewPhrases() {
   const input = document.getElementById('phraseInput').value;
-  phrases = input.split('\n').map(p => p.trim()).filter(p => p.length > 0);
-  
-  document.getElementById('phraseCount').textContent = phrases.length;
-  
-  const preview = document.getElementById('phrasePreview');
-  preview.innerHTML = '';
-  
-  const showCount = Math.min(phrases.length, 50);
-  for (let i = 0; i < showCount; i++) {
-    const chip = document.createElement('span');
-    chip.className = 'chip';
-    chip.textContent = phrases[i];
-    preview.appendChild(chip);
+  const lines = input.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+  // v4.0：若当前 phrases 为 Excel 对象数组，按文本匹配保留其数值字段，避免重解析丢失
+  if (phrases.length > 0 && typeof phrases[0] === 'object') {
+    const map = {};
+    phrases.forEach(p => { if (p && p.text) map[p.text.toLowerCase()] = p; });
+    phrases = lines.map(line => {
+      const existing = map[line.toLowerCase()];
+      return existing ? existing : line;
+    });
+  } else {
+    // v4.0：TXT 导入保持为字符串数组（向后兼容）
+    phrases = lines;
   }
-  
-  if (phrases.length > 50) {
-    const more = document.createElement('span');
-    more.className = 'chip';
-    more.textContent = `...还有${phrases.length - 50}个`;
-    preview.appendChild(more);
-  }
+  updatePhraseUI(phrases);
 }
 
 function clearPhrases() {
@@ -4777,9 +5200,212 @@ function buildBrandSet() {
 }
 
 // ========= 评分逻辑（全得分判定逻辑） =========
+// v4.0 新增：输出结果规则配置（可视化规则编辑器的数据模型）
+// field 可选值：phraseCategory / wordAreaScore / hasSpecificBonus / wordCount / hasCategoryWord /
+//               hasStrongRelated / naturalRank / searchVolume / repeatCount / isBanned
+// op 可选值：== / != / > / >= / < / <= / contains / notContains / isEmpty / notEmpty
+const OUTPUT_RULES = [
+  {
+    name: '标题词',
+    color: '#e94560',
+    logic: 'AND',
+    conditions: [
+      { field: 'phraseCategory', op: '==', value: '干净词组' },
+      { field: 'wordAreaScore', op: '==', value: 5 }
+    ]
+  },
+  {
+    name: '长尾词',
+    color: '#3b82f6',
+    logic: 'AND',
+    // 需求：(词组分类=干净词组 OR 加分词组) AND (含特定加分词 OR (词数≥3 AND 含品类词 AND 含强相关词))
+    conditions: [
+      { type: 'group', logic: 'OR', conditions: [
+        { field: 'phraseCategory', op: '==', value: '干净词组' },
+        { field: 'phraseCategory', op: '==', value: '加分词组' }
+      ]},
+      { type: 'group', logic: 'OR', conditions: [
+        { field: 'hasSpecificBonus', op: '==', value: 'true' },
+        { type: 'group', logic: 'AND', conditions: [
+          { field: 'wordCount', op: '>=', value: 3 },
+          { field: 'hasCategoryWord', op: '==', value: 'true' },
+          { field: 'hasStrongRelated', op: '==', value: 'true' }
+        ]}
+      ]}
+    ]
+  },
+  {
+    name: '专题词',
+    color: '#22c55e',
+    logic: 'OR',
+    // 需求：(词组分类=干净词组 OR 加分词组) OR (自然排名≤80 AND 搜索量≥1000 AND 重复>1)
+    conditions: [
+      { type: 'group', logic: 'OR', conditions: [
+        { field: 'phraseCategory', op: '==', value: '干净词组' },
+        { field: 'phraseCategory', op: '==', value: '加分词组' }
+      ]},
+      { type: 'group', logic: 'AND', conditions: [
+        { field: 'naturalRank', op: '<=', value: 80 },
+        { field: 'searchVolume', op: '>=', value: 1000 },
+        { field: 'repeatCount', op: '>', value: 1 }
+      ]}
+    ]
+  },
+  {
+    name: '沙池词',
+    color: '#6b7280',
+    logic: 'AND',
+    // 沙池词为兜底分类，无需条件（未命中上述任何规则且非违禁词即归为沙池词）
+    conditions: []
+  },
+  {
+    name: '违禁词',
+    color: '#991b1b',
+    logic: 'AND',
+    conditions: [
+      { field: 'isBanned', op: '==', value: 'true' }
+    ]
+  }
+];
+
+// v4.0 新增：规则字段中文标签（用于编辑器下拉框）
+const FIELD_OPTIONS = [
+  { value: 'phraseCategory', label: '词组分类' },
+  { value: 'wordAreaScore', label: '词区得分' },
+  { value: 'hasSpecificBonus', label: '含特定加分词' },
+  { value: 'wordCount', label: '词数' },
+  { value: 'hasCategoryWord', label: '含品类词' },
+  { value: 'hasStrongRelated', label: '含强相关词' },
+  { value: 'naturalRank', label: '自然排名' },
+  { value: 'searchVolume', label: '搜索量' },
+  { value: 'repeatCount', label: '重复次数' },
+  { value: 'isBanned', label: '是否违禁' }
+];
+
+// v4.0 新增：操作符中文标签
+const OP_LABELS = {
+  '==': '等于',
+  '!=': '不等于',
+  '>': '大于',
+  '>=': '大于等于',
+  '<': '小于',
+  '<=': '小于等于',
+  'contains': '包含',
+  'notContains': '不包含',
+  'isEmpty': '为空',
+  'notEmpty': '不为空'
+};
+
+// v4.0 新增：将单个结果映射到规则字段值
+function getRuleFields(r) {
+  return {
+    phraseCategory: r.category || '',
+    wordAreaScore: r.wordAreaScore || 0,
+    hasSpecificBonus: !!r.specialBonusApplied,
+    wordCount: r.wordCount || 0,
+    hasCategoryWord: !!r.hasP1,
+    hasStrongRelated: !!r.hasP2,
+    naturalRank: r.naturalRank || 0,
+    searchVolume: r.searchVolume || 0,
+    repeatCount: r.repeat || 0,
+    isBanned: !!r.isBanned
+  };
+}
+
+// v4.0 新增：计算单个条件是否满足
+function evalCondition(c, vals) {
+  const fv = vals[c.field];
+  const op = c.op;
+  if (op === 'isEmpty') {
+    return fv === '' || fv == null || fv === false || fv === 0;
+  }
+  if (op === 'notEmpty') {
+    return !(fv === '' || fv == null || fv === false || fv === 0);
+  }
+  if (op === 'contains') {
+    return String(fv).toLowerCase().includes(String(c.value).toLowerCase());
+  }
+  if (op === 'notContains') {
+    return !String(fv).toLowerCase().includes(String(c.value).toLowerCase());
+  }
+  if (op === '==') {
+    if (typeof fv === 'boolean') return fv === (c.value === 'true');
+    if (typeof fv === 'number') return fv === Number(c.value);
+    return String(fv) === String(c.value);
+  }
+  if (op === '!=') {
+    if (typeof fv === 'boolean') return fv !== (c.value === 'true');
+    if (typeof fv === 'number') return fv !== Number(c.value);
+    return String(fv) !== String(c.value);
+  }
+  // 数值比较
+  const a = Number(fv);
+  const b = Number(c.value);
+  if (op === '>') return a > b;
+  if (op === '>=') return a >= b;
+  if (op === '<') return a < b;
+  if (op === '<=') return a <= b;
+  return false;
+}
+
+// v4.0 新增：判断单条规则是否命中（支持嵌套条件组 group，递归求值）
+function evaluateRule(rule, r) {
+  if (!rule.conditions || rule.conditions.length === 0) return false;
+  const vals = getRuleFields(r);
+  const results = rule.conditions.map(c => {
+    if (c && c.type === 'group') return evaluateRule(c, r); // 递归求值嵌套条件组
+    return evalCondition(c, vals);
+  });
+  if (rule.logic === 'OR') return results.some(Boolean);
+  return results.every(Boolean);
+}
+
+// v4.0 改造（方案B：多重标签）：根据当前规则对结果进行分类
+// 返回数组：一个词组可同时命中 标题词/长尾词/专题词 多个类别，全部并列收集；
+// 违禁词独占（不与其他类别并列）；沙池词仅兜底（上述三类均未命中且非违禁时）。
+// 命中按固定顺序 [标题词, 长尾词, 专题词] 排列。
+function classifyOutput(r) {
+  // 违禁词最高优先级，独占（不与其他类别并列）
+  if (r.isBanned) {
+    return [{ name: '违禁词', color: '#991b1b' }];
+  }
+  // 遍历 标题词 / 长尾词 / 专题词 三类，逐类判定，收集所有命中
+  const multi = ['标题词', '长尾词', '专题词'];
+  const hits = [];
+  for (const name of multi) {
+    const rule = OUTPUT_RULES.find(x => x.name === name);
+    if (rule && evaluateRule(rule, r)) {
+      hits.push({ name: rule.name, color: rule.color });
+    }
+  }
+  // 命中任一类别即返回命中数组（保持固定顺序）
+  if (hits.length > 0) return hits;
+  // 兜底：沙池词
+  const sandbox = OUTPUT_RULES.find(x => x.name === '沙池词');
+  return [{ name: '沙池词', color: (sandbox && sandbox.color) || '#6b7280' }];
+}
+
+// v4.0 新增：分类名 → CSS 类名后缀
+function getOutputCls(name) {
+  switch (name) {
+    case '标题词': return 'title';
+    case '长尾词': return 'longtail';
+    case '专题词': return 'topic';
+    case '沙池词': return 'sandbox';
+    case '违禁词': return 'banned';
+    default: return 'sandbox';
+  }
+}
+
 function processPhrase(phrase, index) {
-  const detectedBrand = autoDetectBrand(phrase);
-  
+  // v4.0 新增：兼容字符串（TXT）与对象（Excel）两种输入
+  const phraseObj = typeof phrase === 'string'
+    ? { text: phrase, searchVolume: 0, competitorCount: 0, cpr: 0, adRank: 0, naturalRank: 0, repeat: 0 }
+    : phrase;
+  const phraseText = phraseObj.text;
+
+  const detectedBrand = autoDetectBrand(phraseText);
+
   // 修改1：分区名称改为品类词、强相关、弱相关
   const p1Words = document.getElementById('p1Input').value
     .split('\n').map(w => w.trim().toLowerCase()).filter(w => w.length > 0);
@@ -4787,30 +5413,47 @@ function processPhrase(phrase, index) {
     .split('\n').map(w => w.trim().toLowerCase()).filter(w => w.length > 0);
   const p3Words = document.getElementById('p3Input').value
     .split('\n').map(w => w.trim().toLowerCase()).filter(w => w.length > 0);
-  
+
   // 将分区词库转为 Set 结构，用于快速查找
   const p1Set = new Set(p1Words);
   const p2Set = new Set(p2Words);
   const p3Set = new Set(p3Words);
-  
+
   let score = 0;
   let matchedWords = [];
-  
+
   // 读取分区分值设定
   const p1ScoreVal = parseInt(document.getElementById('p1Score').value) || 3;
   const p2ScoreVal = parseInt(document.getElementById('p2Score').value) || 2;
   const p3ScoreVal = parseInt(document.getElementById('p3Score').value) || 1;
-  
+
   // 构建 scoreObj（映射每个词到其得分），同时计算基础分 score
-  const lowerPhrase = phrase.toLowerCase();
+  const lowerPhrase = phraseText.toLowerCase();
   const words = lowerPhrase.split(/\s+/).filter(w => w.length > 0);
   const scoreObj = Object.create(null);
-  
+
+  // v4.0 修正：wordAreaScore 算法 = 词区得分模式「去重基础分」
+  // 规则：同分区内多个相同分区的词只算一次分（按分区去重）；
+  //       不含全得分加分(bonusAmount)，不含特定加分。
+  // 该值始终按词区得分模式规则计算，供分类引擎(如 标题词 要求 词区得分==5)使用。
+  let wordAreaScoreVal = 0;
+  {
+    let _wp1 = false, _wp2 = false, _wp3 = false;
+    for (const w of words) {
+      if (p1Set.has(w)) _wp1 = true;
+      if (p2Set.has(w)) _wp2 = true;
+      if (p3Set.has(w)) _wp3 = true;
+    }
+    if (_wp1) wordAreaScoreVal += p1ScoreVal;
+    if (_wp2) wordAreaScoreVal += p2ScoreVal;
+    if (_wp3) wordAreaScoreVal += p3ScoreVal;
+  }
+
   // 步骤2：品牌检测（在违禁词检测之前）
   if (detectedBrand && !matchedWords.some(m => m.startsWith('品牌:'))) {
     matchedWords.push(`品牌:${detectedBrand}`);
   }
-  
+
   // 步骤3：违禁词检测（优先于所有其他分类）
   let isBanned = false;
   for (const w of words) {
@@ -4819,7 +5462,7 @@ function processPhrase(phrase, index) {
       break;
     }
   }
-  
+
   // 如果是违禁词组，直接返回结果
   if (isBanned) {
     // 仍然计算基础分（品类+强相关+弱相关）
@@ -4844,9 +5487,9 @@ function processPhrase(phrase, index) {
       scoreObj[w] = s;
       score += s;
     }
-    
-    return {
-      phrase,
+
+    const result = {
+      phrase: phraseText,
       score,
       brand: detectedBrand || '',
       matchedWords: matchedWords.join(', '),
@@ -4857,10 +5500,20 @@ function processPhrase(phrase, index) {
       phraseScore: 0,
       brands: detectedBrand ? [detectedBrand] : [],
       isBanned: true,
-      specialBonusApplied: false
+      specialBonusApplied: false,
+      // v4.0 新增：Excel 字段与规则判定字段
+      searchVolume: phraseObj.searchVolume || 0,
+      naturalRank: phraseObj.naturalRank || 0,
+      repeat: phraseObj.repeat || 0,
+      wordCount: words.length,
+      hasP1: false,
+      hasP2: false,
+      wordAreaScore: wordAreaScoreVal
     };
+    result.output = classifyOutput(result);
+    return result;
   }
-  
+
   // 步骤4：先计算基础分（分区词得分）
   for (const w of words) {
     let s = 0;
@@ -4884,35 +5537,12 @@ function processPhrase(phrase, index) {
     scoreObj[w] = s;
     score += s; // 直接累加基础分
   }
-  
-  // 单词得分（单词得分模式下计算）
-  let phraseScore = 0;
+
+  // hasP1/hasP2/hasP3 在下方 allScored 循环中按词实际归属设置，用于词组分类(干净/加分词组)判定。
+  // 词区得分列(phraseScore)展示值 = 词区得分模式去重基础分，与 wordAreaScore 完全一致。
   let hasP1 = false, hasP2 = false, hasP3 = false;
-  const simplifiedModeChecked = document.getElementById('simplifiedMode').checked;
-  
-  if (simplifiedModeChecked) {
-    // 单词得分模式：同分区只算一次分
-    
-    // 检查词组中是否包含各分区的词
-    for (const w of words) {
-      if (p1Set.has(w)) hasP1 = true;
-      if (p2Set.has(w)) hasP2 = true;
-      if (p3Set.has(w)) hasP3 = true;
-    }
-    
-    // 每个分区只加一次分
-    if (hasP1) phraseScore += p1ScoreVal;
-    if (hasP2) phraseScore += p2ScoreVal;
-    if (hasP3) phraseScore += p3ScoreVal;
-    
-    // 词区得分模式（如果勾选，使用更严格的逻辑）
-    const simplifiedScoring = document.getElementById('simplifiedScoring').checked;
-    if (simplifiedScoring) {
-      // 词区得分模式：保持原有逻辑（同分区只算一次分）
-      // 当前实现已满足要求
-    }
-  }
-  
+  let phraseScore = wordAreaScoreVal;
+
   // 读取 Bonus 设置
   const skipPrep = document.getElementById('skipPrep').checked;
   const skipColor = document.getElementById('skipColor').checked;
@@ -4921,7 +5551,7 @@ function processPhrase(phrase, index) {
   const skipCustomBrand = document.getElementById('skipCustomBrand').checked;
   const skipBuiltinBrand = document.getElementById('skipBuiltinBrand').checked;
   const bonusAmount = Math.max(0, parseInt(document.getElementById('bonusAmount').value) || 20);
-  
+
   // 构建 bonusSkip 动态集合
   const bonusSkip = Object.create(null);
   if (skipPrep) {
@@ -4950,7 +5580,7 @@ function processPhrase(phrase, index) {
       bonusSkip[brand] = true;
     }
   }
-  
+
   // 全得分判定
   let allScored = true;
   let hasValidWord = false;
@@ -4959,16 +5589,16 @@ function processPhrase(phrase, index) {
   let hasWeakRelated = false;
   let skipTypes = Object.create(null);
   const brands = detectedBrand ? [detectedBrand] : [];
-  
+
   for (let j = 0; j < words.length; j++) {
     const w = words[j];
     const s = scoreObj[w] || 0;
-    
+
     // 设置品类词标记
     if (p1Set.has(w)) hasP1 = true;
     if (p2Set.has(w)) hasP2 = true;
     if (p3Set.has(w)) { hasP3 = true; hasWeakRelated = true; }
-    
+
     // 判断此词是否应被"跳过"（不参与全得分判定）
     let isSkipped = false;
     let skipType = '';
@@ -4987,12 +5617,12 @@ function processPhrase(phrase, index) {
       hasSkipWord = true;
       skipType = 'number';
     }
-    
+
     // 记录跳过词类型
     if (isSkipped && skipType) {
       skipTypes[skipType] = true;
     }
-    
+
     // 未被跳过且未得分 → 不满足全得分
     if (!isSkipped && s === 0) {
       allScored = false;
@@ -5003,10 +5633,11 @@ function processPhrase(phrase, index) {
       if (s > 1) hasHighScoreWord = true;
     }
   }
-  
+
   // bonus：有至少一个有效词 且 除跳过词外全得分 且 包含至少一个强相关词或品类词 → +bonusAmount
   let bonusType = ''; // '', '干净词组', '加分词组'
-  if (hasValidWord && allScored && hasHighScoreWord && (hasP2 || hasP1)) {
+  const bonusApplied = hasValidWord && allScored && hasHighScoreWord && (hasP2 || hasP1); // v4.0：记录是否触发全得分加分
+  if (bonusApplied) {
     score += bonusAmount;
     // 判断词组类型：含跳过词/弱相关词，OR 不含品类词 → 加分词组；不含跳过词、不含弱相关词、且含品类词 → 干净词组
     if (hasSkipWord || hasWeakRelated || !hasP1) {
@@ -5021,13 +5652,13 @@ function processPhrase(phrase, index) {
   // 注意：有强相关词(hasP2)但无品类词(!hasP1)的情况，
   // 或有品类词但不满足allScored/hasHighScoreWord的情况，
   // bonusType设置为'不加分词组'（有得分词但不符合全得分条件）
-  
+
   // 不加分词组：有得分词但不符合全得分条件（消除未分类空白）
   if (bonusType === '') {
     bonusType = '不加分词组';
   }
 
-  
+
   // 步骤7：特定加分匹配 + 分值叠加
   let specialBonusApplied = false;
   let specialBonusDetails = [];
@@ -5036,12 +5667,12 @@ function processPhrase(phrase, index) {
   if (isNaN(currentSpecialBonusScore) || currentSpecialBonusScore < 0) {
     currentSpecialBonusScore = 100;
   }
-  
+
   if (specialBonusSet.size > 0) {
     // 对多词词组（含空格的），使用子串包含匹配
     // 对单词词条，使用单词级别匹配
     const phraseLower = lowerPhrase;
-    
+
     for (const entry of specialBonusSet) {
       if (entry.includes(' ')) {
         // 多词词组：子串包含匹配
@@ -5060,14 +5691,14 @@ function processPhrase(phrase, index) {
       }
     }
   }
-  
+
   // 如果有特定加分命中，添加到匹配词中
   if (specialBonusDetails.length > 0) {
     matchedWords.push(`特定加分:${specialBonusDetails.join(',')}`);
   }
-  
-  return {
-    phrase,
+
+  const result = {
+    phrase: phraseText,
     score,
     brand: detectedBrand || '',
     matchedWords: matchedWords.join(', '),
@@ -5078,8 +5709,19 @@ function processPhrase(phrase, index) {
     phraseScore: phraseScore || 0,
     brands: brands,
     isBanned: false,
-    specialBonusApplied: specialBonusApplied
+    specialBonusApplied: specialBonusApplied,
+    // v4.0 新增：Excel 字段与规则判定字段
+    searchVolume: phraseObj.searchVolume || 0,
+    naturalRank: phraseObj.naturalRank || 0,
+    repeat: phraseObj.repeat || 0,
+    wordCount: words.length,
+    hasP1: hasP1,
+    hasP2: hasP2,
+    // v4.0 修正：词区得分 = 词区得分模式去重基础分（同分区去重，不含全得分加分/特定加分）
+    wordAreaScore: wordAreaScoreVal
   };
+  result.output = classifyOutput(result);
+  return result;
 }
 
 // ========= 计算控制 =========
@@ -5164,7 +5806,7 @@ function renderTable() {
   let html = '<table><thead><tr>';
   html += '<th>序号</th><th>词组</th><th>单词得分</th><th>词区得分</th><th>品牌</th>';
   // 新增：特定加分和违禁词状态列
-  html += '<th>特定加分</th><th>词组分类</th><th>无关词</th><th>匹配词</th>';
+  html += '<th>特定加分</th><th>词组分类</th><th>输出结果</th><th>无关词</th><th>匹配词</th>';
   html += '</tr></thead><tbody>';
   
   for (let i = 0; i < pageResults.length; i++) {
@@ -5181,6 +5823,13 @@ function renderTable() {
     html += `<td>${r.specialBonusApplied ? `<span style="color:#4caf50;">✓ 已加分</span>` : ''}</td>`;
     // 新增：词组分类（含违禁词组）
     html += `<td>${getCategoryBadge(r.category, r.isBanned)}</td>`;
+    // v4.0 改造（方案B：多重标签）：输出结果分类列并排显示所有命中标签
+    const outTags = (r.output && r.output.length) ? r.output : [{ name: '沙池词', color: '#6b7280' }];
+    const outHtml = outTags.map(t => {
+      const c = t.color || '#6b7280';
+      return `<span class="output-tag" style="color:${c};border-color:${c};">${t.name}</span>`;
+    }).join('');
+    html += `<td><div class="output-tags">${outHtml}</div></td>`;
     html += `<td style="font-size:12px;color:var(--text-muted);">${escapeHtml(r.irrelevantWords || '')}</td>`;
     // 匹配词放在最后一列
     html += `<td style="font-size:12px;color:var(--text-muted);">${escapeHtml(r.matchedWords)}</td>`;
@@ -5258,14 +5907,18 @@ function exportCSV() {
     return;
   }
   
-  // 在CSV中添加新列（含特定加分和违禁词状态）
-  let csv = '\ufeff序号,词组,单词得分,词区得分,品牌,特定加分,词组分类,无关词,匹配词\n';
-  
+  // v4.0：新增 输出结果 列及 Excel 导入字段（搜索量/竞品数/CPR/广告排名/自然排名/重复）
+  let csv = '\ufeff序号,词组,单词得分,词区得分,品牌,特定加分,词组分类,输出结果,搜索量,竞品数,CPR,广告排名,自然排名,重复,无关词,匹配词\n';
+
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
     const specialBonusStr = r.specialBonusApplied ? '是' : '否';
     const categoryStr = r.isBanned ? '违禁词组' : r.category;
-    csv += `${i + 1},"${r.phrase}",${r.score},${r.phraseScore || ''},"${r.brand}","${specialBonusStr}","${categoryStr}","${r.irrelevantWords || ''}","${r.matchedWords}"\n`;
+    // v4.0 改造（方案B：多重标签）：多个标签用 | 分隔，例如 标题词|长尾词|专题词
+    const outputName = (r.output && r.output.length)
+      ? r.output.map(t => t.name).join('|')
+      : '沙池词';
+    csv += `${i + 1},"${r.phrase}",${r.score},${r.phraseScore || ''},"${r.brand}","${specialBonusStr}","${categoryStr}","${outputName}",${r.searchVolume || 0},${r.competitorCount || 0},${r.cpr || 0},${r.adRank || 0},${r.naturalRank || 0},${r.repeat || 0},"${r.irrelevantWords || ''}","${r.matchedWords}"\n`;
   }
   
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -5529,6 +6182,448 @@ function closeHelpModal() {
 // ========= 词区得分模式状态管理（已解除与单词得分模式的联动） =========
 // 备注：单词得分模式与词区得分模式现在完全独立，互不干扰
 
+// ========= v4.0 新增：输出规则编辑器 UI =========
+let currentRuleIndex = 0;
+
+// 从 localStorage 载入用户自定义规则（覆盖默认条件，保留默认名称与颜色）
+function loadOutputRules() {
+  try {
+    const saved = localStorage.getItem('wordScorer_outputRules');
+    if (!saved) return;
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return;
+    parsed.forEach(p => {
+      const def = OUTPUT_RULES.find(d => d.name === p.name);
+      if (def) {
+        if (p.logic) def.logic = p.logic;
+        if (Array.isArray(p.conditions)) def.conditions = p.conditions;
+        if (p.color) def.color = p.color;
+      }
+    });
+  } catch (e) {
+    // 配置损坏时忽略，使用默认规则
+  }
+}
+
+function renderRuleTabs() {
+  const tabs = document.getElementById('ruleTabs');
+  tabs.innerHTML = '';
+  OUTPUT_RULES.forEach((rule, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'rule-tab' + (i === currentRuleIndex ? ' active' : '');
+    btn.textContent = rule.name;
+    btn.style.borderBottomColor = rule.color;
+    btn.onclick = () => {
+      currentRuleIndex = i;
+      renderRuleTabs();
+      renderRuleEditor();
+    };
+    tabs.appendChild(btn);
+  });
+}
+
+let _grpUid = 0; // v4.0：渲染时每组唯一 id，用于嵌套条件组的 AND/OR 单选组命名
+
+function renderRuleEditor() {
+  const rule = OUTPUT_RULES[currentRuleIndex];
+  const logicRadio = document.querySelector(`input[name="ruleLogic"][value="${rule.logic}"]`);
+  if (logicRadio) logicRadio.checked = true;
+  document.getElementById('ruleColor').value = rule.color;
+  document.getElementById('ruleColorText').textContent = rule.color;
+
+  const wrap = document.getElementById('ruleConditions');
+  wrap.innerHTML = '';
+
+  if (rule.name === '沙池词') {
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">默认兜底分类：所有非违禁词且未命中其他规则者归为沙池词，无需设置条件。</div>';
+    return;
+  }
+
+  _grpUid = 0;
+  const children = document.createElement('div');
+  children.className = 'rule-group-children';
+  (rule.conditions || []).forEach((cond, i) => {
+    children.appendChild(renderConditionNode(cond, rule.conditions, i));
+  });
+  wrap.appendChild(children);
+  // 根级添加按钮（添加的条件/条件组归属于规则根组）
+  wrap.appendChild(buildGroupButtons(rule.conditions));
+}
+
+// 渲染单个条件节点：叶子条件 或 嵌套条件组
+function renderConditionNode(cond, parentArray, index) {
+  if (cond && cond.type === 'group') return renderGroupBlock(cond, parentArray, index);
+  return renderLeafRow(cond, parentArray, index);
+}
+
+// 嵌套条件组：自带 AND/OR 逻辑，可继续嵌套
+function renderGroupBlock(group, parentArray, index) {
+  const block = document.createElement('div');
+  block.className = 'rule-group-wrap';
+
+  const head = document.createElement('div');
+  head.className = 'rule-group-head';
+  head.appendChild(document.createTextNode('条件组：'));
+  const uid = ++_grpUid;
+  ['AND', 'OR'].forEach(l => {
+    const lbl = document.createElement('label');
+    const rb = document.createElement('input');
+    rb.type = 'radio';
+    rb.name = 'grpLogic_' + uid;
+    rb.value = l;
+    rb.checked = group.logic === l;
+    rb.onchange = () => { group.logic = l; };
+    lbl.appendChild(rb);
+    lbl.appendChild(document.createTextNode(' ' + l + ' '));
+    head.appendChild(lbl);
+  });
+  const rmGrp = document.createElement('button');
+  rmGrp.className = 'btn btn-sm';
+  rmGrp.textContent = '✕ 删除组';
+  rmGrp.onclick = () => { parentArray.splice(index, 1); renderRuleEditor(); };
+  head.appendChild(rmGrp);
+  block.appendChild(head);
+
+  const children = document.createElement('div');
+  children.className = 'rule-group-children';
+  (group.conditions || []).forEach((c, i) => {
+    children.appendChild(renderConditionNode(c, group.conditions, i));
+  });
+  block.appendChild(children);
+  block.appendChild(buildGroupButtons(group.conditions));
+  return block;
+}
+
+// 叶子条件行：字段 / 操作符 / 值 / 删除
+function renderLeafRow(cond, parentArray, index) {
+  const row = document.createElement('div');
+  row.className = 'rule-condition-row';
+
+  const fieldSel = document.createElement('select');
+  FIELD_OPTIONS.forEach(f => {
+    const o = document.createElement('option');
+    o.value = f.value;
+    o.textContent = f.label;
+    if (f.value === cond.field) o.selected = true;
+    fieldSel.appendChild(o);
+  });
+  fieldSel.onchange = () => { cond.field = fieldSel.value; };
+
+  const opSel = document.createElement('select');
+  Object.keys(OP_LABELS).forEach(op => {
+    const o = document.createElement('option');
+    o.value = op;
+    o.textContent = OP_LABELS[op];
+    if (op === cond.op) o.selected = true;
+    opSel.appendChild(o);
+  });
+  opSel.onchange = () => { cond.op = opSel.value; };
+
+  const valInput = document.createElement('input');
+  valInput.type = 'text';
+  valInput.value = (cond.value === undefined || cond.value === null) ? '' : cond.value;
+  valInput.oninput = () => { cond.value = valInput.value; };
+
+  const rmBtn = document.createElement('button');
+  rmBtn.className = 'btn btn-sm';
+  rmBtn.textContent = '✕';
+  rmBtn.title = '删除条件';
+  rmBtn.onclick = () => {
+    parentArray.splice(index, 1);
+    renderRuleEditor();
+  };
+
+  row.appendChild(fieldSel);
+  row.appendChild(opSel);
+  row.appendChild(valInput);
+  row.appendChild(rmBtn);
+  return row;
+}
+
+// 条件组内的“+ 条件 / + 条件组”按钮
+function buildGroupButtons(targetArray) {
+  const btns = document.createElement('div');
+  btns.className = 'rule-group-btns';
+  const addCond = document.createElement('button');
+  addCond.className = 'btn btn-sm';
+  addCond.textContent = '+ 条件';
+  addCond.onclick = () => { targetArray.push({ field: 'phraseCategory', op: '==', value: '' }); renderRuleEditor(); };
+  const addGrp = document.createElement('button');
+  addGrp.className = 'btn btn-sm';
+  addGrp.textContent = '+ 条件组';
+  addGrp.onclick = () => { targetArray.push({ type: 'group', logic: 'AND', conditions: [] }); renderRuleEditor(); };
+  btns.appendChild(addCond);
+  btns.appendChild(addGrp);
+  return btns;
+}
+
+function addRuleCondition() {
+  const rule = OUTPUT_RULES[currentRuleIndex];
+  if (rule.name === '沙池词') return; // 沙池词为兜底分类，无需条件
+  if (!rule.conditions) rule.conditions = [];
+  rule.conditions.push({ field: 'phraseCategory', op: '==', value: '' });
+  renderRuleEditor();
+}
+
+function applyOutputRules() {
+  const rule = OUTPUT_RULES[currentRuleIndex];
+  const logicEl = document.querySelector('input[name="ruleLogic"]:checked');
+  if (logicEl) rule.logic = logicEl.value;
+  rule.color = document.getElementById('ruleColor').value;
+  document.getElementById('ruleColorText').textContent = rule.color;
+
+  try {
+    localStorage.setItem('wordScorer_outputRules', JSON.stringify(OUTPUT_RULES));
+  } catch (e) { /* ignore */ }
+
+  if (results.length > 0) {
+    results.forEach(r => { r.output = classifyOutput(r); });
+    renderTable();
+  }
+  alert('已应用输出规则，结果已重新计算。');
+}
+
+function resetOutputRules() {
+  if (!confirm('确定恢复默认输出规则？当前自定义配置将被覆盖。')) return;
+  OUTPUT_RULES.length = 0;
+  [
+    { name: '标题词', color: '#e94560', logic: 'AND', conditions: [ { field: 'phraseCategory', op: '==', value: '干净词组' }, { field: 'wordAreaScore', op: '==', value: 5 } ] },
+    { name: '长尾词', color: '#3b82f6', logic: 'AND', conditions: [
+      { type: 'group', logic: 'OR', conditions: [ { field: 'phraseCategory', op: '==', value: '干净词组' }, { field: 'phraseCategory', op: '==', value: '加分词组' } ] },
+      { type: 'group', logic: 'OR', conditions: [ { field: 'hasSpecificBonus', op: '==', value: 'true' }, { type: 'group', logic: 'AND', conditions: [ { field: 'wordCount', op: '>=', value: 3 }, { field: 'hasCategoryWord', op: '==', value: 'true' }, { field: 'hasStrongRelated', op: '==', value: 'true' } ] } ] }
+    ] },
+    { name: '专题词', color: '#22c55e', logic: 'OR', conditions: [
+      { type: 'group', logic: 'OR', conditions: [ { field: 'phraseCategory', op: '==', value: '干净词组' }, { field: 'phraseCategory', op: '==', value: '加分词组' } ] },
+      { type: 'group', logic: 'AND', conditions: [ { field: 'naturalRank', op: '<=', value: 80 }, { field: 'searchVolume', op: '>=', value: 1000 }, { field: 'repeatCount', op: '>', value: 1 } ] }
+    ] },
+    { name: '沙池词', color: '#6b7280', logic: 'AND', conditions: [] },
+    { name: '违禁词', color: '#991b1b', logic: 'AND', conditions: [ { field: 'isBanned', op: '==', value: 'true' } ] }
+  ].forEach(d => OUTPUT_RULES.push(d));
+  currentRuleIndex = 0;
+  try { localStorage.removeItem('wordScorer_outputRules'); } catch (e) {}
+  renderRuleTabs();
+  renderRuleEditor();
+  if (results.length > 0) {
+    results.forEach(r => { r.output = classifyOutput(r); });
+    renderTable();
+  }
+  alert('已恢复默认输出规则。');
+}
+
+// ========= v4.0 新增：词频分析弹窗逻辑 =========
+let wordFreqData = [];
+let wordFreqFilter = '';
+let wordFreqSort = 'freq';
+const wordFreqCategoryMap = {}; // 记忆用户已选择的分类
+
+const WF_CATEGORY_OPTIONS = ['品类词', '强相关', '弱相关', '跳过词', '品牌词', '未分类'];
+
+// v4.0 交互优化：词频分类选择改为四个并列可点击选项框（互斥单选）
+const WF_SELECTABLE = ['品类词', '强相关', '弱相关', '跳过词', '违禁词'];
+const WF_ZONE_COLOR = { '品类词': '#3b82f6', '强相关': '#22c55e', '弱相关': '#e9c46a', '跳过词': '#8888aa', '违禁词': '#991b1b' };
+
+function openWordFreqModal() {
+  if (phrases.length === 0) {
+    alert('请先导入或输入词组库！');
+    return;
+  }
+  buildWordFreq();
+  setWordFreqSort('freq');
+  document.getElementById('wfSearch').value = '';
+  wordFreqFilter = '';
+  document.getElementById('wordFreqModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWordFreqModal() {
+  document.getElementById('wordFreqModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// v4.0 交互优化：输出结果规则弹窗开关
+function openOutputRulesModal() {
+  renderRuleTabs(); // 确保打开时是最新内容
+  renderRuleEditor();
+  document.getElementById('outputRulesModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeOutputRulesModal() {
+  document.getElementById('outputRulesModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// 构建词频统计：拆分单词、过滤介词与单字符、识别品牌词
+function buildWordFreq() {
+  const freq = Object.create(null);
+  for (const p of phrases) {
+    const text = typeof p === 'string' ? p : p.text;
+    const words = text.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    for (const w of words) {
+      if (w.length <= 1) continue;       // 过滤单字符（除非有意义词，这里统一跳过）
+      if (PREP_SET[w]) continue;          // 过滤介词/停用词
+      freq[w] = (freq[w] || 0) + 1;
+    }
+  }
+  wordFreqData = Object.keys(freq).map(w => ({
+    word: w,
+    freq: freq[w],
+    isBrand: brandSet.has(w),
+    isBanned: bannedSet.has(w),   // v4.0 fix: 违禁词识别
+    category: wordFreqCategoryMap[w]
+      || (brandSet.has(w) ? '品牌词'
+        : (bannedSet.has(w) ? '违禁词' : '未分类'))
+  }));
+}
+
+function renderWordFreq() {
+  let data = wordFreqData.slice();
+  if (wordFreqFilter) {
+    const f = wordFreqFilter.toLowerCase();
+    data = data.filter(d => d.word.includes(f));
+  }
+  if (wordFreqSort === 'freq') {
+    data.sort((a, b) => b.freq - a.freq || a.word.localeCompare(b.word));
+  } else {
+    data.sort((a, b) => a.word.localeCompare(b.word));
+  }
+
+  const tbody = document.getElementById('wfTableBody');
+  tbody.innerHTML = '';
+  const top = data.slice(0, 100);
+  top.forEach((d, i) => {
+    const tr = document.createElement('tr');
+
+    const tdIdx = document.createElement('td');
+    tdIdx.textContent = (i + 1);
+    tr.appendChild(tdIdx);
+
+    const tdWord = document.createElement('td');
+    const wspan = document.createElement('span');
+    wspan.textContent = d.word;
+    if (d.isBrand) wspan.className = 'brand-word';
+    if (d.isBanned) wspan.className = 'banned-word';
+    tdWord.appendChild(wspan);
+    tr.appendChild(tdWord);
+
+    const tdFreq = document.createElement('td');
+    tdFreq.textContent = d.freq;
+    tr.appendChild(tdFreq);
+
+    const tdCat = document.createElement('td');
+    const optWrap = document.createElement('div');
+    optWrap.className = 'wf-cat-options';
+    WF_SELECTABLE.forEach(cat => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'wf-cat-btn';
+      b.textContent = cat;
+      b.dataset.cat = cat;
+      if (d.category === cat) b.classList.add('selected');
+      if (d.isBrand) {
+        b.disabled = true;
+        b.classList.add('brand-locked');
+      }
+      b.onclick = () => {
+        if (d.isBrand) return; // 品牌词锁定，不可选
+        // 互斥单选：再次点击同一个则取消，回到「未分类」
+        d.category = (d.category === cat) ? '未分类' : cat;
+        wordFreqCategoryMap[d.word] = d.category;
+        // 重渲染该行按钮选中态
+        [...optWrap.children].forEach(c => c.classList.toggle('selected', c.dataset.cat === d.category));
+        updateWordFreqStats();
+      };
+      optWrap.appendChild(b);
+    });
+    tdCat.appendChild(optWrap);
+    tr.appendChild(tdCat);
+
+    const tdAct = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-sm';
+    btn.textContent = '应用到分区';
+    btn.disabled = d.isBrand;
+    btn.onclick = () => { applySingleWord(d.word, d.category); };
+    tdAct.appendChild(btn);
+    tr.appendChild(tdAct);
+
+    tbody.appendChild(tr);
+  });
+  updateWordFreqStats();
+}
+
+function setWordFreqSort(mode) {
+  wordFreqSort = mode;
+  document.getElementById('wfSortFreq').classList.toggle('active', mode === 'freq');
+  document.getElementById('wfSortAlpha').classList.toggle('active', mode === 'alpha');
+  renderWordFreq();
+}
+
+function onWordFreqSearch() {
+  wordFreqFilter = document.getElementById('wfSearch').value.trim();
+  renderWordFreq();
+}
+
+// 将单个单词按所选分类追加到对应分区（追加模式，不覆盖已有内容）
+function addWordToCategory(word, category) {
+  if (category === '品牌词' || category === '未分类') return; // 不应用
+  if (category === '品类词' || category === '强相关' || category === '弱相关') {
+    const part = { '品类词': 'p1', '强相关': 'p2', '弱相关': 'p3' }[category];
+    const ta = document.getElementById(part + 'Input');
+    const existing = ta.value.split('\n').map(w => w.trim().toLowerCase()).filter(Boolean);
+    if (!existing.includes(word)) existing.push(word);
+    ta.value = existing.join('\n');
+    savePartitionData(part);
+  } else if (category === '跳过词') {
+    const key = 'wordScorer_skip_prep';
+    const existing = (localStorage.getItem(key) || PREPS.join('\n'))
+      .split('\n').map(w => w.trim().toLowerCase()).filter(Boolean);
+    if (!existing.includes(word)) existing.push(word);
+    localStorage.setItem(key, existing.join('\n'));
+    updateSkipSet('prep');
+  } else if (category === '违禁词') {
+    const input = document.getElementById('bannedWordsInput');
+    const existing = input.value.split('\n').map(w => w.trim().toLowerCase()).filter(Boolean);
+    if (!existing.includes(word)) existing.push(word);
+    input.value = existing.join('\n');
+    saveBannedWordsData(); // 刷新 bannedSet
+  }
+}
+
+function applySingleWord(word, category) {
+  addWordToCategory(word, category);
+  alert(`已将 "${word}" 应用到「${category}」`);
+}
+
+function applyWordFreqCategories() {
+  const applied = { '品类词': 0, '强相关': 0, '弱相关': 0, '跳过词': 0, '违禁词': 0 };
+  wordFreqData.forEach(d => {
+    if (applied[d.category] != null) {
+      addWordToCategory(d.word, d.category);
+      applied[d.category]++;
+    }
+  });
+  const parts = Object.keys(applied).filter(k => applied[k] > 0)
+    .map(k => `${k}(${applied[k]})`).join('，');
+  alert('已应用所选分类到分区设置（追加模式）：' + (parts || '无'));
+}
+
+function updateWordFreqStats() {
+  const counts = { '品类词': 0, '强相关': 0, '弱相关': 0, '跳过词': 0, '品牌词': 0, '违禁词': 0, '未分类': 0 };
+  wordFreqData.forEach(d => { if (counts[d.category] != null) counts[d.category]++; });
+  const colors = {
+    '品类词': '#3b82f6', '强相关': '#22c55e', '弱相关': '#e9c46a',
+    '跳过词': '#8888aa', '品牌词': '#9b5de5', '违禁词': '#991b1b', '未分类': '#6b7280'
+  };
+  const bar = document.getElementById('wfStatBar');
+  bar.innerHTML = '';
+  Object.keys(counts).forEach(k => {
+    const span = document.createElement('span');
+    span.className = 'wf-stat-item';
+    span.innerHTML = `<span class="wf-dot" style="background:${colors[k]}"></span>${k}(${counts[k]})`;
+    bar.appendChild(span);
+  });
+}
+
 // ========= 初始化 =========
 function init() {
   // 加载保存的分区数据
@@ -5542,7 +6637,12 @@ function init() {
   
   // 初始化跳过词词库
   initSkipSets();
-  
+
+  // v4.0：载入并渲染输出结果规则编辑器
+  loadOutputRules();
+  renderRuleTabs();
+  renderRuleEditor();
+
   // 加载保存的品牌词库（永久化）
   const savedBrands = localStorage.getItem('wordScorer_brands');
   if (savedBrands) {
@@ -5586,6 +6686,29 @@ function init() {
   
   // 更新品牌计数
   document.getElementById('brandCount').textContent = brandSet.size;
+
+  // v4.2：恢复"加载配置"写入的界面偏好（全得分加分数值 / 跳过词开关 / 偏好开关），刷新不丢
+  try {
+    const uiPrefs = JSON.parse(localStorage.getItem('wordScorer_uiPrefs') || 'null');
+    if (uiPrefs) {
+      if (uiPrefs.bonusAmount != null) {
+        const ba = document.getElementById('bonusAmount');
+        if (ba) ba.value = uiPrefs.bonusAmount;
+      }
+      const ex = uiPrefs.exclusions || {};
+      const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+      setChk('skipPrep', ex.prep !== false);
+      setChk('skipColor', ex.color !== false);
+      setChk('skipSize', ex.size !== false);
+      setChk('skipNumber', ex.number !== false);
+      setChk('skipCustomBrand', ex.customBrand !== false);
+      setChk('skipBuiltinBrand', ex.builtinBrand !== false);
+      setChk('skipExempt', ex.exempt !== false);
+      const pf = uiPrefs.preferences || {};
+      setChk('simplifiedScoring', !!pf.wordAreaScoreMode);
+      setChk('enableBrandDetect', pf.enableBrandDetect !== false);
+    }
+  } catch (e) {}
   
   // 点击模态框外部关闭
   document.getElementById('brandLibModal').addEventListener('click', (e) => {
@@ -5607,6 +6730,20 @@ function init() {
       closeHelpModal();
     }
   });
+
+  // v4.0：词频分析弹窗外部点击关闭
+  document.getElementById('wordFreqModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      closeWordFreqModal();
+    }
+  });
+
+  // v4.0 交互优化：输出结果规则弹窗外部点击关闭
+  document.getElementById('outputRulesModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      closeOutputRulesModal();
+    }
+  });
 }
 
 // 页面加载完成后初始化
@@ -5625,6 +6762,230 @@ function closeVersionModal() {
   document.getElementById('versionModal').style.display = 'none';
   document.body.style.overflow = '';
 }
+
+// ========= 配置保存 / 加载（v4.2 新增） =========
+// 将当前全部设置导出为 JSON 文件
+function saveConfig() {
+  try {
+    const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const getChecked = (id) => { const el = document.getElementById(id); return el ? !!el.checked : false; };
+
+    // 1. 五类分类词库 + 特定加分词 + 违禁词
+    const categoryWords = {
+      p1: getVal('p1Input'),
+      p2: getVal('p2Input'),
+      p3: getVal('p3Input'),
+      skip: '', // 跳过词通过下方 skipLists 管理，无独立文本框
+      specialBonus: getVal('specialBonusInput'),
+      banned: getVal('bannedWordsInput')
+    };
+
+    // 2. 品牌词库（与 BRAND_TEXT 同步）
+    const brands = (typeof BRAND_TEXT === 'string') ? BRAND_TEXT : '';
+
+    // 3. 介词 / 停用词（preps -> wordScorer_skip_prep）
+    const preps = localStorage.getItem('wordScorer_skip_prep') || PREPS.join('\n');
+
+    // 4. 全得分判定设置
+    const bonus = {
+      amount: parseInt(getVal('bonusAmount'), 10) || 20,
+      exclusions: {
+        prep: getChecked('skipPrep'),
+        color: getChecked('skipColor'),
+        size: getChecked('skipSize'),
+        number: getChecked('skipNumber'),
+        customBrand: getChecked('skipCustomBrand'),
+        builtinBrand: getChecked('skipBuiltinBrand'),
+        exempt: getChecked('skipExempt')
+      },
+      skipLists: {
+        prep: localStorage.getItem('wordScorer_skip_prep') || PREPS.join('\n'),
+        color: localStorage.getItem('wordScorer_skip_color') || COLORS.join('\n'),
+        size: localStorage.getItem('wordScorer_skip_size') || SIZES.join('\n'),
+        exempt: localStorage.getItem('wordScorer_skip_exempt') || EXEMPT_WORDS.join('\n')
+      }
+    };
+
+    // 5. 输出结果规则
+    const outputRules = OUTPUT_RULES;
+
+    // 6. 偏好开关
+    const preferences = {
+      wordAreaScoreMode: getChecked('simplifiedScoring'),
+      enableBrandDetect: getChecked('enableBrandDetect')
+    };
+
+    const data = {
+      meta: { tool: '筛词神器', version: '4.2', exportedAt: new Date().toISOString() },
+      categoryWords,
+      brands,
+      preps,
+      bonus,
+      outputRules,
+      preferences
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `shaici-config-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert('保存配置失败：' + (e && e.message ? e.message : e));
+  }
+}
+
+// 处理选择的配置文件
+function handleConfigFile(event) {
+  const input = event.target;
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (!confirm('加载配置将整体替换当前所有设置，确认继续？')) {
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data || typeof data !== 'object' || !data.categoryWords || !data.bonus || !data.outputRules) {
+        alert('加载失败：配置文件缺少必要字段（categoryWords / bonus / outputRules）');
+        return;
+      }
+      applyConfig(data);
+      alert('配置已加载并应用');
+    } catch (err) {
+      alert('加载失败：' + (err && err.message ? err.message : err));
+    } finally {
+      input.value = '';
+    }
+  };
+  reader.onerror = () => {
+    alert('加载失败：文件读取错误');
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// 应用配置（整体替换 + 同步写入 localStorage）
+function applyConfig(data) {
+  try {
+    if (!data || typeof data !== 'object') return;
+    const cw = data.categoryWords || {};
+
+    // 1. 五类分类词库（复用现有 save 函数落盘）
+    const setPartition = (partition, value) => {
+      const el = document.getElementById(partition + 'Input');
+      if (el) {
+        el.value = (value != null ? value : '');
+        if (typeof savePartitionData === 'function') savePartitionData(partition);
+      }
+    };
+    setPartition('p1', cw.p1);
+    setPartition('p2', cw.p2);
+    setPartition('p3', cw.p3);
+    // skip 无独立文本框，跳过
+
+    // 特定加分词
+    const sbEl = document.getElementById('specialBonusInput');
+    if (sbEl) {
+      sbEl.value = (cw.specialBonus != null ? cw.specialBonus : '');
+      if (typeof saveSpecialBonusData === 'function') saveSpecialBonusData();
+    }
+    // 违禁词
+    const bwEl = document.getElementById('bannedWordsInput');
+    if (bwEl) {
+      bwEl.value = (cw.banned != null ? cw.banned : '');
+      if (typeof saveBannedWordsData === 'function') saveBannedWordsData();
+    }
+
+    // 2. 品牌词库：内联重建 brandSet + 写 localStorage（避免弹确认框阻塞）
+    const brands = (data.brands != null ? data.brands : '');
+    BRAND_TEXT = brands;
+    brandSet.clear();
+    for (const b of brands.split('\n').map(b => b.trim().toLowerCase()).filter(b => b.length > 0)) {
+      brandSet.add(b);
+    }
+    try { localStorage.setItem('wordScorer_brands', brands); } catch (e) {}
+    const brandEditor = document.getElementById('brandLibEditor');
+    if (brandEditor) brandEditor.value = brands;
+    const brandCountEl = document.getElementById('brandCount');
+    if (brandCountEl) brandCountEl.textContent = brandSet.size;
+
+    // 3. 介词 / 停用词（preps -> wordScorer_skip_prep）
+    const bonus = data.bonus || {};
+    const skipLists = bonus.skipLists || {};
+    const preps = (data.preps != null && data.preps !== '') ? data.preps
+      : (skipLists.prep || PREPS.join('\n'));
+    try { localStorage.setItem('wordScorer_skip_prep', preps); } catch (e) {}
+    if (typeof updateSkipSet === 'function') updateSkipSet('prep');
+
+    // 4. 全得分判定设置
+    const exclusions = bonus.exclusions || {};
+    const setCheck = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.checked = !!val;
+    };
+    // 缺字段默认 true
+    setCheck('skipPrep', exclusions.prep !== false);
+    setCheck('skipColor', exclusions.color !== false);
+    setCheck('skipSize', exclusions.size !== false);
+    setCheck('skipNumber', exclusions.number !== false);
+    setCheck('skipCustomBrand', exclusions.customBrand !== false);
+    setCheck('skipBuiltinBrand', exclusions.builtinBrand !== false);
+    setCheck('skipExempt', exclusions.exempt !== false);
+
+    const amount = (bonus.amount != null) ? parseInt(bonus.amount, 10) : 20;
+    const bonusAmountEl = document.getElementById('bonusAmount');
+    if (bonusAmountEl) bonusAmountEl.value = (isNaN(amount) ? 20 : amount);
+
+    // 四类跳过词列表（prep 已在上方处理，这里处理 color/size/exempt）
+    const restoreSkip = (cat, val, fallback) => {
+      const text = (val != null && val !== '') ? val : fallback;
+      try { localStorage.setItem('wordScorer_skip_' + cat, text); } catch (e) {}
+      if (typeof updateSkipSet === 'function') updateSkipSet(cat);
+    };
+    restoreSkip('color', skipLists.color, COLORS.join('\n'));
+    restoreSkip('size', skipLists.size, SIZES.join('\n'));
+    restoreSkip('exempt', skipLists.exempt, EXEMPT_WORDS.join('\n'));
+
+    // 5. 输出结果规则
+    if (Array.isArray(data.outputRules)) {
+      OUTPUT_RULES.length = 0;
+      data.outputRules.forEach(r => OUTPUT_RULES.push(r));
+      try { localStorage.setItem('wordScorer_outputRules', JSON.stringify(OUTPUT_RULES)); } catch (e) {}
+      if (typeof renderRuleTabs === 'function') renderRuleTabs();
+      if (typeof renderRuleEditor === 'function') renderRuleEditor();
+      if (typeof applyOutputRules === 'function') applyOutputRules();
+    }
+
+    // 6. 偏好开关（缺字段使用默认值）
+    const preferences = data.preferences || {};
+    setCheck('simplifiedScoring', !!preferences.wordAreaScoreMode);
+    setCheck('enableBrandDetect', preferences.enableBrandDetect !== false);
+
+    // 同步界面偏好到 localStorage，保证刷新不丢
+    try {
+      localStorage.setItem('wordScorer_uiPrefs', JSON.stringify({
+        bonusAmount: (bonusAmountEl ? bonusAmountEl.value : 20),
+        exclusions,
+        preferences
+      }));
+    } catch (e) {}
+
+    // 重渲染结果表格
+    if (typeof renderTable === 'function') renderTable();
+  } catch (e) {
+    alert('应用配置失败：' + (e && e.message ? e.message : e));
+  }
+}
 </script>
 
 <!-- 版本更新记录弹窗 -->
@@ -5635,11 +6996,44 @@ function closeVersionModal() {
       <button class="btn" style="background:#8a1a1a; color:white; border:none;" onclick="closeVersionModal()">关闭</button>
     </div>
     <div class="help-body" style="padding:16px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
-      <div style="background:#1a1a2e; padding:12px; border-radius:6px; margin-bottom:16px;">
-        <h4 style="color:#e94560; margin:8px 0;">v3.1 (2026-07-01)</h4>
+            <div style="background:#1a1a2e; padding:12px; border-radius:6px; margin-bottom:16px;">
+        <h4 style="color:#e94560; margin:8px 0;">v4.2 (2026-07-08)</h4>
         <ul style="margin-left:20px;">
-          <li><strong>重构词组分类</strong>：将"不加分组"拆分为"无关词组"和"不加分词组"两类，消除未分类空白</li>
-          <li><strong>新增版本记录弹窗</strong>：版本更新记录独立为弹窗，不占用使用说明版面</li>
+          <li><strong>新增保存配置 / 加载配置</strong>：一键导出与导入全部工具设置（词库 / 品牌词库 / 全得分判定设置 / 输出结果规则 / 偏好开关）。配置文件为 JSON，加载时整体替换当前所有设置并同步写入 localStorage，刷新不丢。</li>
+        </ul>
+      </div>
+            <div style="background:#1a1a2e; padding:12px; border-radius:6px; margin-bottom:16px;">
+        <h4 style="color:#e94560; margin:8px 0;">v4.1 (2026-07-08)</h4>
+        <ul style="margin-left:20px;">
+          <li><strong>「输出结果」升级为多重标签</strong>：原单值互斥（一个词组只显示优先级最高的一个类别）改为可并列多重标签。一个词组可同时命中 标题词/长尾词/专题词 多个类别并全部并列显示（表格内并排彩色小药丸，CSV 导出用 <code>|</code> 分隔，如 <code>标题词|长尾词|专题词</code>）。</li>
+          <li><strong>边界规则</strong>：违禁词仍独占（含违禁词只显示「违禁词」，不并列其他）；沙池词仅兜底（标题/长尾/专题全未命中且非违禁时才显示）；标签固定顺序 标题词→长尾词→专题词→沙池词→违禁词。因专题词条件含"干净/加分词组"，任何干净或加分词组必带专题词标签（预期行为）。</li>
+        </ul>
+      </div>
+      <div style="background:#1a1a2e; padding:12px; border-radius:6px; margin-bottom:16px;">
+        <h4 style="color:#e94560; margin:8px 0;">v4.0 (2026-07-04)</h4>
+        <ul style="margin-left:20px;">
+          <li><strong>新增「输出结果」5类自动分类</strong>：评分结果表格新增「输出结果」列，将每个词组按规则划分为 标题词(红 #e94560)、长尾词(蓝 #3b82f6)、专题词(绿 #22c55e)、沙池词(灰 #6b7280)、违禁词(暗红 #991b1b)。</li>
+          <li><strong>新增可视化输出规则编辑器</strong>：右侧「🎯 输出结果规则」卡片，支持 Tab 切换5类、增删判定条件、选择 AND/OR 组合逻辑与颜色，「应用规则」即时重算，「重置默认」恢复预设。</li>
+          <li><strong>导入升级为 Excel</strong>：文件上传支持 .txt/.xlsx/.xls，借助 SheetJS 解析 Excel，自动读取 搜索量/竞品数/CPR/广告排名/自然排名/重复 等字段（完全向后兼容 TXT 纯文本）。</li>
+          <li><strong>新增词频 Top100 分析弹窗</strong>：计算区「📊 词频分析」一键统计词组拆分后的单词频次，支持按频率/首字母排序、搜索过滤、品牌词灰显锁定，并可批量将单词应用到 品类词/强相关/弱相关/跳过词 分区（追加模式）。</li>
+          <li><strong>CSV 导出同步扩展</strong>：导出结果新增「输出结果」及 搜索量、竞品数、CPR、广告排名、自然排名、重复 字段。</li>
+        </ul>
+      </div>
+        <h4 style="color:#e94560; margin:8px 0;">v3.1 (2026-07-04)</h4>
+        <ul style="margin-left:20px;">
+          <li><strong>重构词组分类体系</strong>：将原来的4类（加分词组/干净词组/不加分组/违禁词组）重构为5类：
+            <ul style="margin-left:20px; margin-top:4px;">
+              <li>「无关词组」：不含任何得分词（品类词/强相关/弱相关），或仅含弱相关词</li>
+              <li>「不加分词组」：含得分词，但含非得分词（不满足全得分条件），原"空白(未分类)"归入此类</li>
+              <li>「加分词组」：满足全得分条件，但含跳过词或弱相关词</li>
+              <li>「干净词组」：满足全得分条件，且不含跳过词和弱相关词（须含品类词）</li>
+              <li>「违禁词组」：含违禁词，最高优先级，跳过全得分判定</li>
+            </ul>
+          </li>
+          <li><strong>修复分类Bug</strong>：修复<code>women plus vintage</code>被误判为"不加分词组"的问题（全得分逻辑条件修正：hasP2 || hasP1）</li>
+          <li><strong>版本记录独立弹窗</strong>：版本更新记录从使用说明中剥离，独立为弹窗按钮，不占用主界面版面</li>
+          <li><strong>更新品牌库</strong>：品牌词库从822个扩展至3539个（含Shein等平台品牌）</li>
+          <li><strong>修正网页部署版登录页版本信息</strong>：登录页底部版权信息从"v2.0"更新为"v3.1"</li>
         </ul>
       </div>
       <div style="background:#1a1a2e; padding:12px; border-radius:6px; margin-bottom:16px;">
