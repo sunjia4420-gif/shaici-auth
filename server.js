@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const compression = require('compression');
 const path = require('path');
 
 const {
@@ -32,8 +33,14 @@ app.use(session({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 静态文件
-app.use(express.static(path.join(__dirname, 'public')));
+// gzip 压缩（大幅减少传输体积，tool.html 102KB -> ~20KB）
+app.use(compression());
+
+// 静态文件（带 1 天缓存）
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '1d',
+  etag: true
+}));
 
 // 中间件：检查是否已登录
 function requireAuth(req, res, next) {
