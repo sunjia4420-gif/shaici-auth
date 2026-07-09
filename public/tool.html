@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>筛词神器 v4.2</title>
+<title>筛词神器 v4.3.1</title>
 <style>
 :root {
   --bg: #1a1a2e;
@@ -466,6 +466,38 @@ tr.banned-row:hover {
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
+/* v4.3 新增：Excel 列映射弹窗样式 */
+.colmap-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.colmap-modal.active { display: flex; }
+.colmap-modal-inner {
+  background: var(--card);
+  border-radius: 12px;
+  width: 560px;
+  max-width: 92vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.colmap-modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600;
+}
+.colmap-modal-body { padding: 12px 16px; overflow-y: auto; }
+.colmap-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+.colmap-col-name { flex: 1; font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.colmap-row select { flex: 0 0 170px; }
+.colmap-modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+.colmap-note { font-size: 12px; color: var(--text-muted); margin: 0 0 8px; }
 .skip-edit-header {
   display: flex;
   justify-content: space-between;
@@ -810,7 +842,7 @@ tr.banned-row:hover {
 })();
 </script>
 
-<header class="app-header"><div id="appTitle" contenteditable="true" spellcheck="false">筛词神器 v4.2</div><span class="header-actions" style="margin-left:auto; display:inline-flex; gap:8px; align-items:center;"><button class="btn" onclick="saveConfig()">保存配置</button><button class="btn" onclick="document.getElementById('configFileInput').click()">加载配置</button></span><input type="file" id="configFileInput" accept=".json,application/json" style="display:none" onchange="handleConfigFile(event)"></header>
+<header class="app-header"><div id="appTitle" contenteditable="true" spellcheck="false">筛词神器 v4.3.1</div><span class="header-actions" style="margin-left:auto; display:inline-flex; gap:8px; align-items:center;"><button class="btn" onclick="saveConfig()">保存配置</button><button class="btn" onclick="document.getElementById('configFileInput').click()">加载配置</button></span><input type="file" id="configFileInput" accept=".json,application/json" style="display:none" onchange="handleConfigFile(event)"></header>
 
 <main class="main-layout">
   <div class="top-row">
@@ -831,6 +863,7 @@ tr.banned-row:hover {
             <button class="btn-primary" onclick="parseAndPreviewPhrases()">解析词组 →</button>
           </div>
           <div id="phrasePreview" class="preview-chips"></div>
+          <div id="colMapNotice" style="display:none; font-size:12px; color:var(--text-muted); margin-top:6px;"></div>
         </div>
       </div>
 
@@ -1193,6 +1226,25 @@ tr.banned-row:hover {
           <span id="skipEditCount">0 个词</span>
           <button class="btn btn-sm" onclick="dedupeSkipEdit()">去重</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- v4.3 新增：Excel 列映射弹窗 -->
+  <div class="colmap-modal" id="colMapModal">
+    <div class="colmap-modal-inner">
+      <div class="colmap-modal-header">
+        <span>列映射（请确认每列对应的字段）</span>
+        <span style="font-size:12px;font-weight:400;color:var(--text-muted);">关键词词组为必填</span>
+      </div>
+      <div class="colmap-modal-body">
+        <p class="colmap-note">“关键词词组”为必填列；其余字段未识别仅提示，不影响解析与后续操作。可手动调整每列对应的字段。</p>
+        <div id="colMapRows"></div>
+        <div id="colMapWarn" style="display:none; margin-top:10px; padding:8px 10px; border-radius:6px; background:rgba(233,69,96,0.12); color:#e94560; font-size:13px; font-weight:600;"></div>
+      </div>
+      <div class="colmap-modal-footer">
+        <button class="btn" onclick="closeColMapModal()">取消</button>
+        <button class="btn btn-primary" onclick="confirmColMap()">确认并解析</button>
       </div>
     </div>
   </div>
@@ -4961,21 +5013,24 @@ function numOr0(v) {
 }
 
 // v4.0 新增：解析 Excel 行数据为对象数组（跳过表头行，第一列=关键词词组）
-function parseExcelRows(rows) {
+function parseExcelRows(rows, columnMap) {
+  // v4.3：支持按 columnMap（字段→列索引）取值；缺省回退为位置映射
+  const cm = columnMap || { keyword: 0, searchVolume: 1, competitorCount: 2, cpr: 3, adRank: 4, naturalRank: 5, repeat: 6 };
+  const col = (f) => (cm[f] == null ? undefined : cm[f]);
   const out = [];
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
     if (!row || row.length === 0) continue;
-    const text = String(row[0] == null ? '' : row[0]).trim();
+    const text = String(row[col('keyword')] == null ? '' : row[col('keyword')]).trim();
     if (!text) continue;
     out.push({
       text: text,
-      searchVolume: numOr0(row[1]),
-      competitorCount: numOr0(row[2]),
-      cpr: numOr0(row[3]),
-      adRank: numOr0(row[4]),
-      naturalRank: numOr0(row[5]),
-      repeat: numOr0(row[6])
+      searchVolume: numOr0(row[col('searchVolume')]),
+      competitorCount: numOr0(row[col('competitorCount')]),
+      cpr: numOr0(row[col('cpr')]),
+      adRank: numOr0(row[col('adRank')]),
+      naturalRank: numOr0(row[col('naturalRank')]),
+      repeat: numOr0(row[col('repeat')])
     });
   }
   return out;
@@ -5016,8 +5071,17 @@ function handleFileUpload(event) {
         const firstSheetName = wb.SheetNames[0];
         const ws = wb.Sheets[firstSheetName];
         const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
-        const objArr = parseExcelRows(rows);
-        applyImportedPhrases(objArr);
+        const header = rows[0] || [];
+        const auto = buildColumnMap(header).map;
+        // v4.3：默认以本次自动识别为准；仅当某字段自动识别未命中时，才用上次保存的映射补缺（避免旧映射整体覆盖导致数值列被误配为「忽略」）
+        let initial = Object.assign({}, auto);
+        try {
+          const saved = JSON.parse(localStorage.getItem('wordScorer_colmap') || 'null');
+          if (saved && saved.colCount === header.length && saved.map) {
+            for (const k in saved.map) { if (initial[k] == null) initial[k] = saved.map[k]; }
+          }
+        } catch (e2) {}
+        openColMapModal(rows, header, initial);
       } catch (err) {
         alert('Excel 解析失败：' + (err && err.message ? err.message : err));
       }
@@ -5043,6 +5107,123 @@ function applyImportedPhrases(arr) {
   phrases = arr;
   document.getElementById('phraseInput').value = arr.map(p => typeof p === 'string' ? p : p.text).join('\n');
   updatePhraseUI(arr);
+}
+
+// ========= v4.3 新增：Excel 表头识别 + 列映射弹窗 =========
+function normHeader(s) {
+  return String(s == null ? '' : s).trim().toLowerCase().replace(/[\s ]/g, '').replace(/[\p{P}\p{S}]/gu, '');
+}
+const COLMAP_FIELDS = [
+  { key: 'keyword', label: '关键词词组', required: true,
+    aliases: ['关键词','词组','搜索词','词','keyword','keywords','keyphrase','phrase','搜索词组'] },
+  { key: 'searchVolume', label: '搜索量',
+    aliases: ['搜索量','月搜索量','searchvolume','volume','sv'] },
+  { key: 'competitorCount', label: '竞品数',
+    aliases: ['竞品数','竞品','competitors','compete','competitor','competition'] },
+  { key: 'cpr', label: 'CPR',
+    aliases: ['cpr'] },
+  { key: 'adRank', label: '广告排名',
+    aliases: ['广告排名','广告位','adrank'] },
+  { key: 'naturalRank', label: '自然排名',
+    aliases: ['自然排名','自然位','naturalrank','organicrank'] },
+  { key: 'repeat', label: '重复',
+    aliases: ['重复','重复数','出现次数','repeat'] }
+];
+function buildColumnMap(header) {
+  const normed = (header || []).map(h => normHeader(h));
+  const map = {};
+  const unmatched = [];
+  const used = {};
+  COLMAP_FIELDS.forEach(f => {
+    let hit = -1;
+    for (let i = 0; i < normed.length; i++) {
+      if (used[i]) continue;
+      const n = normed[i];
+      if (!n) continue;
+      const exact = f.aliases.some(a => normHeader(a) === n);
+      const substr = f.aliases.some(a => n.indexOf(normHeader(a)) !== -1);
+      if (exact || substr) { hit = i; break; }
+    }
+    if (hit >= 0) { map[f.key] = hit; used[hit] = true; }
+    else if (!f.required) unmatched.push(f.label);
+  });
+  return { map: map, unmatched: unmatched };
+}
+let _colMapRows = null;
+function openColMapModal(rows, header, initialMap) {
+  _colMapRows = rows;
+  const container = document.getElementById('colMapRows');
+  container.innerHTML = '';
+  for (let i = 0; i < header.length; i++) {
+    const hname = (header[i] == null || header[i] === '') ? '(空列)' : String(header[i]);
+    let sel = '';
+    for (const f of COLMAP_FIELDS) { if (initialMap[f.key] === i) { sel = f.key; break; } }
+    let opts = '<option value="">忽略</option>';
+    COLMAP_FIELDS.forEach(f => {
+      const selected = (sel === f.key) ? ' selected' : '';
+      opts += '<option value="' + f.key + '"' + selected + '>' + f.label + (f.required ? '（必填）' : '') + '</option>';
+    });
+    const row = document.createElement('div');
+    row.className = 'colmap-row';
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'colmap-col-name';
+    nameSpan.textContent = '列' + (i + 1) + ': ' + hname;
+    const selectEl = document.createElement('select');
+    selectEl.setAttribute('data-col', String(i));
+    selectEl.innerHTML = opts;
+    selectEl.setAttribute('onchange', 'updateColMapWarn()');
+    row.appendChild(nameSpan);
+    row.appendChild(selectEl);
+    container.appendChild(row);
+  }
+  document.getElementById('colMapModal').classList.add('active');
+  updateColMapWarn();
+}
+function closeColMapModal() {
+  document.getElementById('colMapModal').classList.remove('active');
+  _colMapRows = null;
+}
+
+function updateColMapWarn() {
+  const selects = document.querySelectorAll('#colMapRows select');
+  const confirmed = {};
+  selects.forEach(s => { const v = s.value; if (v) confirmed[v] = true; });
+  const unmatched = COLMAP_FIELDS.filter(f => !f.required && !confirmed[f.key]).map(f => f.label);
+  const warn = document.getElementById('colMapWarn');
+  if (!warn) return;
+  if (unmatched.length > 0) {
+    warn.innerHTML = '⚠️ 以下字段未映射，对应数值将按 0 处理：' + unmatched.join('、');
+    warn.style.display = 'block';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+function confirmColMap() {
+  const selects = document.querySelectorAll('#colMapRows select');
+  const confirmed = {};
+  selects.forEach(s => {
+    const v = s.value;
+    if (v) confirmed[v] = parseInt(s.getAttribute('data-col'), 10);
+  });
+  if (confirmed.keyword == null) {
+    alert('“关键词词组”为必填列，请在下拉框中指定哪一列是关键词词组。');
+    return;
+  }
+  const objArr = parseExcelRows(_colMapRows, confirmed);
+  applyImportedPhrases(objArr);
+  const unmatched = COLMAP_FIELDS.filter(f => !f.required && confirmed[f.key] == null).map(f => f.label);
+  const note = document.getElementById('colMapNotice');
+  if (unmatched.length > 0) {
+    note.textContent = 'ℹ️ 未识别字段：' + unmatched.join('、') + '（不影响后续操作）';
+    note.style.display = 'block';
+  } else {
+    note.style.display = 'none';
+  }
+  try {
+    const header = _colMapRows[0] || [];
+    localStorage.setItem('wordScorer_colmap', JSON.stringify({ colCount: header.length, map: confirmed }));
+  } catch (e) {}
+  closeColMapModal();
 }
 
 function parseAndPreviewPhrases() {
@@ -5505,6 +5686,9 @@ function processPhrase(phrase, index) {
       searchVolume: phraseObj.searchVolume || 0,
       naturalRank: phraseObj.naturalRank || 0,
       repeat: phraseObj.repeat || 0,
+      competitorCount: phraseObj.competitorCount || 0,
+      cpr: phraseObj.cpr || 0,
+      adRank: phraseObj.adRank || 0,
       wordCount: words.length,
       hasP1: false,
       hasP2: false,
@@ -5714,6 +5898,9 @@ function processPhrase(phrase, index) {
     searchVolume: phraseObj.searchVolume || 0,
     naturalRank: phraseObj.naturalRank || 0,
     repeat: phraseObj.repeat || 0,
+    competitorCount: phraseObj.competitorCount || 0,
+    cpr: phraseObj.cpr || 0,
+    adRank: phraseObj.adRank || 0,
     wordCount: words.length,
     hasP1: hasP1,
     hasP2: hasP2,
@@ -5806,7 +5993,7 @@ function renderTable() {
   let html = '<table><thead><tr>';
   html += '<th>序号</th><th>词组</th><th>单词得分</th><th>词区得分</th><th>品牌</th>';
   // 新增：特定加分和违禁词状态列
-  html += '<th>特定加分</th><th>词组分类</th><th>输出结果</th><th>无关词</th><th>匹配词</th>';
+  html += '<th>特定加分</th><th>词组分类</th><th>输出结果</th><th>搜索量</th><th>竞品数</th><th>CPR</th><th>广告排名</th><th>自然排名</th><th>重复</th><th>无关词</th><th>匹配词</th>';
   html += '</tr></thead><tbody>';
   
   for (let i = 0; i < pageResults.length; i++) {
@@ -5830,6 +6017,13 @@ function renderTable() {
       return `<span class="output-tag" style="color:${c};border-color:${c};">${t.name}</span>`;
     }).join('');
     html += `<td><div class="output-tags">${outHtml}</div></td>`;
+    // v4.0 新增：渲染 Excel 导入字段列（与 CSV 导出保持一致）
+    html += `<td>${r.searchVolume || 0}</td>`;
+    html += `<td>${r.competitorCount || 0}</td>`;
+    html += `<td>${r.cpr || 0}</td>`;
+    html += `<td>${r.adRank || 0}</td>`;
+    html += `<td>${r.naturalRank || 0}</td>`;
+    html += `<td>${r.repeat || 0}</td>`;
     html += `<td style="font-size:12px;color:var(--text-muted);">${escapeHtml(r.irrelevantWords || '')}</td>`;
     // 匹配词放在最后一列
     html += `<td style="font-size:12px;color:var(--text-muted);">${escapeHtml(r.matchedWords)}</td>`;
@@ -6816,7 +7010,7 @@ function saveConfig() {
     };
 
     const data = {
-      meta: { tool: '筛词神器', version: '4.2', exportedAt: new Date().toISOString() },
+      meta: { tool: '筛词神器', version: '4.3.1', exportedAt: new Date().toISOString() },
       categoryWords,
       brands,
       preps,
@@ -6997,6 +7191,18 @@ function applyConfig(data) {
     </div>
     <div class="help-body" style="padding:16px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
             <div style="background:#1a1a2e; padding:12px; border-radius:6px; margin-bottom:16px;">
+        <h4 style="color:#e94560; margin:8px 0;">v4.3.1 (2026-07-09)</h4>
+        <ul style="margin-left:20px;">
+          <li><strong>Bug 修复：Excel 导出竞品数 / CPR 为 0</strong>：根因为列映射弹窗"记住上次映射"会整体覆盖本次自动识别，导致旧错误映射被持久化、竞品数/CPR 永久归零；英文表头 "Competitor Count" 因别名缺失而漏配。修复：默认以本次自动识别为准、旧映射仅补缺；竞品数别名补全 competitor/competition；弹窗内新增未映射字段实时红色告警，避免盲确认。</li>
+        </ul>
+      </div>
+      <div style="background:#1a1a2e; padding:12px; border-radius:6px; margin-bottom:16px;">
+        <h4 style="color:#e94560; margin:8px 0;">v4.3 (2026-07-09)</h4>
+        <ul style="margin-left:20px;">
+          <li><strong>Excel 表头智能识别 + 列映射弹窗</strong>：上传 Excel 后自动识别列（关键词词组采用模糊匹配且为必填项，缺失则报错拦截；竞品数/CPR/广告排名/自然排名/重复 六项可识别项，未命中仅提示不阻塞）。识别后弹出映射确认弹窗，可手动调整每一列对应字段，确认后解析，并记住本次映射作为下次默认。</li>
+        </ul>
+      </div>
+      <div style="background:#1a1a2e; padding:12px; border-radius:6px; margin-bottom:16px;">
         <h4 style="color:#e94560; margin:8px 0;">v4.2 (2026-07-08)</h4>
         <ul style="margin-left:20px;">
           <li><strong>新增保存配置 / 加载配置</strong>：一键导出与导入全部工具设置（词库 / 品牌词库 / 全得分判定设置 / 输出结果规则 / 偏好开关）。配置文件为 JSON，加载时整体替换当前所有设置并同步写入 localStorage，刷新不丢。</li>
