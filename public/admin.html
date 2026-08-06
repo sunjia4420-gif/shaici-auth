@@ -258,7 +258,7 @@ async function loadPasswords() {
       <td>${p.used_count || 0}${p.max_uses ? '/'+p.max_uses : ''}</td>
       <td>${p.expires_at ? new Date(p.expires_at).toLocaleString() : '永不过期'}</td>
       <td>${toolsHtml}</td>
-      <td><button class="btn-sm btn-danger" onclick="deletePwd(${p.id},'${esc(p.name)}')">删除</button></td>
+      <td><button class="btn-sm btn-danger" onclick="deletePwd(${p.id},${jsAttr(p.name)})">删除</button></td>
     </tr>`;
   }).join('');
 }
@@ -276,17 +276,29 @@ function renderToolsCell(tools, pwdId) {
 }
 
 async function toggleStatus(id, active) {
-  await fetch(`/api/admin/passwords/${id}/status`, {
-    method:'PUT', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({is_active: active ? 1 : 0})
-  });
+  try {
+    const r = await fetch(`/api/admin/passwords/${id}/status`, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({is_active: active ? 1 : 0})
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || '状态更新失败');
+  } catch (err) {
+    alert('状态更新失败：' + err.message);
+  }
   loadPasswords();
 }
 
 async function deletePwd(id, name) {
   if (!confirm(`确定要删除口令「${name}」吗？`)) return;
-  await fetch(`/api/admin/passwords/${id}`, { method:'DELETE' });
-  loadPasswords();
+  try {
+    const r = await fetch(`/api/admin/passwords/${id}`, { method:'DELETE' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || '删除失败');
+    loadPasswords();
+  } catch (err) {
+    alert('删除失败：' + err.message);
+  }
 }
 
 // ========== Add Password ==========
@@ -410,6 +422,10 @@ function esc(s){
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
+}
+// 生成可安全嵌入 HTML 属性（如 onclick）的 JS 字符串字面量
+function jsAttr(s){
+  return JSON.stringify(String(s)).replace(/"/g, '&quot;');
 }
 </script>
 </body>
