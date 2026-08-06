@@ -50,6 +50,14 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// 中间件：检查是否已登录管理后台
+function requireAdmin(req, res, next) {
+  if (!req.session.adminAuth) {
+    return res.status(401).json({ success: false, message: '未登录管理后台' });
+  }
+  next();
+}
+
 // ========== 页面路由 ==========
 
 // 登录页
@@ -169,7 +177,7 @@ app.post('/api/admin/logout', (req, res) => {
 });
 
 // 获取所有口令列表
-app.get('/api/admin/passwords', async (req, res) => {
+app.get('/api/admin/passwords', requireAdmin, async (req, res) => {
   try {
     const passwords = await getAllPasswords();
     res.json({ success: true, data: passwords });
@@ -179,7 +187,7 @@ app.get('/api/admin/passwords', async (req, res) => {
 });
 
 // 添加口令
-app.post('/api/admin/passwords', async (req, res) => {
+app.post('/api/admin/passwords', requireAdmin, async (req, res) => {
   try {
     const { name, password, expires_at, max_uses } = req.body;
     if (!name || !password) {
@@ -193,7 +201,7 @@ app.post('/api/admin/passwords', async (req, res) => {
 });
 
 // 删除口令
-app.delete('/api/admin/passwords/:id', async (req, res) => {
+app.delete('/api/admin/passwords/:id', requireAdmin, async (req, res) => {
   try {
     await deletePassword(parseInt(req.params.id));
     res.json({ success: true });
@@ -203,7 +211,7 @@ app.delete('/api/admin/passwords/:id', async (req, res) => {
 });
 
 // 更新口令启用/禁用状态
-app.put('/api/admin/passwords/:id/status', async (req, res) => {
+app.put('/api/admin/passwords/:id/status', requireAdmin, async (req, res) => {
   try {
     const { is_active } = req.body;
     await updatePasswordStatus(parseInt(req.params.id), is_active === 1 || is_active === true);
@@ -214,7 +222,7 @@ app.put('/api/admin/passwords/:id/status', async (req, res) => {
 });
 
 // 更新口令工具权限
-app.put('/api/admin/passwords/:id/tools', async (req, res) => {
+app.put('/api/admin/passwords/:id/tools', requireAdmin, async (req, res) => {
   try {
     const { allowed_tools } = req.body;
     // 如果为空数组，设为null表示允许所有工具
@@ -227,7 +235,7 @@ app.put('/api/admin/passwords/:id/tools', async (req, res) => {
 });
 
 // 获取访问日志
-app.get('/api/admin/logs', async (req, res) => {
+app.get('/api/admin/logs', requireAdmin, async (req, res) => {
   try {
     const logs = await getAccessLogs(100);
     res.json({ success: true, data: logs });
